@@ -1,0 +1,44 @@
+schema_version: 1
+project:
+  name: word-count
+  title: Word count command line tool
+  domain_tags: [general-software, command-line-tool]
+  default_branch: main
+sandbox:
+  image: rust-fixture
+  workdir: /workspace
+gates:
+  - id: format
+    title: Check formatting
+    argv: [cargo, fmt, --check]
+    timeout_seconds: 120
+    mandatory: false
+  - id: lint
+    title: Check the code with the linter
+    argv: [cargo, clippy, --all-targets, --locked, --, -D, warnings]
+    timeout_seconds: 600
+    mandatory: false
+  - id: build
+    title: Build the project
+    argv: [cargo, build, --locked]
+    timeout_seconds: 600
+    mandatory: true
+  - id: unit-tests
+    title: Run the unit and integration tests
+    argv: [cargo, test, --locked]
+    timeout_seconds: 900
+    mandatory: true
+protected_paths:
+  - ".factory/**"
+  - ".github/**"
+  - CODEOWNERS
+  - "tests/golden/**"
+spec_kit:
+  cli_version: "1.1.2"
+  integration: claude
+  may_initialize: true
+documentation:
+  required_documents:
+    - path: README.md
+      purpose: Explains what the tool does, how to install it and how to use every option.
+  changelog_path: CHANGELOG.md

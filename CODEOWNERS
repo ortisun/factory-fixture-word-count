@@ -1,0 +1,8 @@
+# Who reviews what. GitHub reads the last matching line for a path.
+# Written by scripts/setup-fixture-repository.sh from the template in the factory repository.
+* @ortisan
+/src/ @ortisan
+/tests/ @ortisan
+/tests/golden/ @ortisan
+/.factory/ @ortisan
+/CODEOWNERS @ortisan

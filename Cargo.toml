@@ -1,0 +1,19 @@
+[package]
+name = "word-count"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+description = "Counts the lines, words and characters of a text file or of standard input."
+license = "MIT"
+publish = false
+
+# This table makes the project its own workspace root. The project is a fixture that lives inside
+# the factory's repository, and without the table Cargo would look upward, find the factory's
+# workspace and refuse to build. It also keeps the fixture out of `cargo metadata` of the factory.
+# On the fixture's own GitHub repository the table does no harm.
+[workspace]
+
+[dependencies]
+
+[lints.rust]
+unsafe_code = "forbid"
