@@ -55,6 +55,27 @@ printf 'one two three\n' | word-count
 |---|---|
 | `-h`, `--help` | Show the help text and exit. |
 | `-V`, `--version` | Show the version and exit. |
+| `--json` | Print the three counts as one JSON object instead of the aligned columns. |
+
+### JSON output
+
+With `--json`, the tool prints the counts as one JSON object:
+
+```sh
+printf 'one two three\nfour five\nsix up\n' | word-count --json
+```
+
+```text
+{"lines":3,"words":7,"characters":31}
+```
+
+With a file, the command is `word-count --json notes.txt`. The option may come before or after the
+file name.
+
+The object has the keys `lines`, `words` and `characters`, in that order. It is one compact line
+with no spaces, followed by exactly one newline. Standard input works the same way: run the tool
+with `--json` and no file name, or with a single dash. Errors and exit statuses are unchanged, and
+nothing is printed on standard output when the input cannot be read.
 
 ### Exit status
 
@@ -82,7 +103,7 @@ the project manifest in `.factory/project.yaml` lists that directory as protecte
 
 | Path | What it holds |
 |---|---|
-| `src/lib.rs` | The counting and the plain-text line. |
+| `src/lib.rs` | The counting, the plain-text line and the JSON line. |
 | `src/main.rs` | The command line: the arguments, the reading and the exit status. |
 | `tests/` | The tests that run the real binary, and the stored samples. |
 | `.factory/project.yaml` | The project manifest the factory reads: gate commands, protected paths and required documents. |

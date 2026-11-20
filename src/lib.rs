@@ -38,6 +38,17 @@ pub fn format_plain(counts: &Counts, name: Option<&str>) -> String {
     }
 }
 
+/// The compact JSON object the tool prints with `--json`: the keys `lines`, `words` and
+/// `characters` in that order, with no spaces and no newline. The values are unsigned integers in
+/// plain decimal form, so nothing needs escaping.
+#[must_use]
+pub fn format_json(counts: &Counts) -> String {
+    format!(
+        "{{\"lines\":{},\"words\":{},\"characters\":{}}}",
+        counts.lines, counts.words, counts.characters
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -87,5 +98,39 @@ mod tests {
             format_plain(&counts, Some("notes.txt")),
             "      3       7      31 notes.txt"
         );
+    }
+
+    #[test]
+    fn the_json_line_has_the_three_keys_in_order_with_no_spaces() {
+        let counts = Counts {
+            lines: 3,
+            words: 7,
+            characters: 31,
+        };
+        assert_eq!(
+            format_json(&counts),
+            "{\"lines\":3,\"words\":7,\"characters\":31}"
+        );
+    }
+
+    #[test]
+    fn the_json_line_for_empty_counts_is_all_zero() {
+        assert_eq!(
+            format_json(&Counts::default()),
+            "{\"lines\":0,\"words\":0,\"characters\":0}"
+        );
+    }
+
+    #[test]
+    fn the_json_line_prints_a_large_value_in_plain_decimal_form() {
+        let counts = Counts {
+            lines: usize::MAX,
+            words: 0,
+            characters: 0,
+        };
+        let digits = usize::MAX.to_string();
+        assert!(digits.chars().all(|character| character.is_ascii_digit()));
+        let expected = format!("{{\"lines\":{digits},\"words\":0,\"characters\":0}}");
+        assert_eq!(format_json(&counts), expected);
     }
 }
