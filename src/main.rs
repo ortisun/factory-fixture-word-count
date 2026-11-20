@@ -146,6 +146,9 @@ mod tests {
             parse(args(&["--json", "a", "b"])),
             Err(UsageError::TooManyArguments)
         ));
-        assert!(matches!(parse(args(&["--json", "--help"])), Ok(Request::Help)));
+        assert!(matches!(
+            parse(args(&["--json", "--help"])),
+            Ok(Request::Help)
+        ));
     }
 }

@@ -50,7 +50,7 @@ fn assert_same(with: &Output, without: &Output) {
 }
 
 #[test]
-fn the_sample_file_gives_the_exact_json_line() {
+fn fr_001_fr_002_fr_003_fr_011_the_sample_file_gives_the_exact_json_line() {
     let output = run(&["--json", "tests/golden/sample.txt"]);
     assert_eq!(text(&output.stdout), SAMPLE_JSON);
     assert!(output.stderr.is_empty());
@@ -58,7 +58,7 @@ fn the_sample_file_gives_the_exact_json_line() {
 }
 
 #[test]
-fn the_empty_file_gives_all_zero_counts() {
+fn fr_004_the_empty_file_gives_all_zero_counts() {
     let output = run(&["--json", "tests/golden/empty.txt"]);
     assert_eq!(text(&output.stdout), EMPTY_JSON);
     assert!(output.stderr.is_empty());
@@ -66,7 +66,7 @@ fn the_empty_file_gives_all_zero_counts() {
 }
 
 #[test]
-fn standard_input_gives_the_same_object_as_a_file() {
+fn fr_010_standard_input_gives_the_same_object_as_a_file() {
     let output = run_with_input(&["--json"], b"one two three\nfour five\nsix up\n");
     assert_eq!(text(&output.stdout), SAMPLE_JSON);
     assert!(output.stderr.is_empty());
@@ -74,7 +74,7 @@ fn standard_input_gives_the_same_object_as_a_file() {
 }
 
 #[test]
-fn the_option_may_come_before_after_or_repeat() {
+fn fr_001_the_option_may_come_before_after_or_repeat() {
     for args in [
         &["--json", "tests/golden/sample.txt"][..],
         &["tests/golden/sample.txt", "--json"][..],
@@ -89,7 +89,7 @@ fn the_option_may_come_before_after_or_repeat() {
 }
 
 #[test]
-fn a_missing_file_fails_with_and_without_the_option() {
+fn fr_006_a_missing_file_fails_with_and_without_the_option() {
     for args in [
         &["--json", "tests/golden/missing.txt"][..],
         &["tests/golden/missing.txt"][..],
@@ -102,7 +102,7 @@ fn a_missing_file_fails_with_and_without_the_option() {
 }
 
 #[test]
-fn other_paths_behave_the_same_with_and_without_the_option() {
+fn fr_012_other_paths_behave_the_same_with_and_without_the_option() {
     let cases: [&[&str]; 4] = [
         &["tests/golden/sample.txt", "tests/golden/empty.txt"],
         &["--bogus"],
@@ -117,22 +117,26 @@ fn other_paths_behave_the_same_with_and_without_the_option() {
 }
 
 #[test]
-fn two_file_names_print_no_json_and_exit_with_two() {
-    let output = run(&["--json", "tests/golden/sample.txt", "tests/golden/empty.txt"]);
+fn fr_012_two_file_names_print_no_json_and_exit_with_two() {
+    let output = run(&[
+        "--json",
+        "tests/golden/sample.txt",
+        "tests/golden/empty.txt",
+    ]);
     assert!(output.stdout.is_empty());
     assert!(!output.stderr.is_empty());
     assert_eq!(output.status.code(), Some(2));
 }
 
 #[test]
-fn the_help_text_does_not_mention_the_option() {
+fn fr_013_the_help_text_does_not_mention_the_option() {
     let output = run(&["--help"]);
     assert!(output.status.success());
     assert!(!text(&output.stdout).contains("--json"));
 }
 
 #[test]
-fn plain_output_equals_the_stored_samples() {
+fn fr_005_plain_output_equals_the_stored_samples() {
     assert_eq!(
         text(&run(&["tests/golden/sample.txt"]).stdout),
         golden("sample.plain.txt")
@@ -141,4 +145,32 @@ fn plain_output_equals_the_stored_samples() {
         text(&run(&["tests/golden/empty.txt"]).stdout),
         golden("empty.plain.txt")
     );
+}
+
+#[test]
+fn fr_007_the_readme_documents_the_option() {
+    let path = format!("{}/README.md", env!("CARGO_MANIFEST_DIR"));
+    assert!(fs::read_to_string(path).expect("README").contains("--json"));
+}
+
+#[test]
+fn fr_008_the_changelog_lists_the_option() {
+    let path = format!("{}/CHANGELOG.md", env!("CARGO_MANIFEST_DIR"));
+    assert!(
+        fs::read_to_string(path)
+            .expect("changelog")
+            .contains("--json")
+    );
+}
+
+#[test]
+fn fr_009_the_manifest_has_no_dependencies() {
+    let path = format!("{}/Cargo.toml", env!("CARGO_MANIFEST_DIR"));
+    let manifest = fs::read_to_string(path).expect("manifest");
+    let section = manifest
+        .split("[dependencies]")
+        .nth(1)
+        .map(|rest| rest.split("\n[").next().unwrap_or(""))
+        .unwrap_or("");
+    assert!(section.trim().is_empty());
 }
