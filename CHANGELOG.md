@@ -5,7 +5,10 @@ All notable changes to this project are listed here, newest first. The format fo
 
 ## Unreleased
 
-Nothing yet.
+### Added
+
+- The `--json` option, which prints the three counts as one compact JSON object with the keys
+  `lines`, `words` and `characters`. The plain output and the exit statuses are unchanged.
 
 ## 0.1.0
 
