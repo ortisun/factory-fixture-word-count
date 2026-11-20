@@ -62,12 +62,15 @@ printf 'one two three\n' | word-count
 With `--json`, the tool prints the counts as one JSON object:
 
 ```sh
-word-count --json notes.txt
+printf 'one two three\nfour five\nsix up\n' | word-count --json
 ```
 
 ```text
 {"lines":3,"words":7,"characters":31}
 ```
+
+With a file, the command is `word-count --json notes.txt`. The option may come before or after the
+file name.
 
 The object has the keys `lines`, `words` and `characters`, in that order. It is one compact line
 with no spaces, followed by exactly one newline. Standard input works the same way: run the tool
