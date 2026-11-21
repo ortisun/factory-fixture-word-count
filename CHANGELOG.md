@@ -5,7 +5,10 @@ All notable changes to this project are listed here, newest first. The format fo
 
 ## Unreleased
 
-Nothing yet.
+### Added
+
+- The `--json` option, which prints the counts as a single-line JSON object with the keys
+  `lines`, `words` and `characters`, for example `{"lines":3,"words":7,"characters":31}`.
 
 ## 0.1.0
 
