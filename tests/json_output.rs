@@ -139,12 +139,27 @@ fn fr_001_fr_012_the_flag_works_before_after_and_repeated() {
     }
 }
 
+fn golden(name: &str) -> String {
+    let path = format!("{}/tests/golden/{name}", env!("CARGO_MANIFEST_DIR"));
+    std::fs::read_to_string(path).expect("the stored sample exists")
+}
+
 #[test]
-fn fr_004_the_run_without_the_flag_is_still_plain() {
-    let dir = Scratch::new("plain");
-    let file = dir.file("notes.txt", SAMPLE.as_bytes());
-    let output = run(&[&file]);
-    assert!(!text(&output.stdout).contains('{'));
+fn fr_004_the_run_without_the_flag_matches_the_stored_plain_samples() {
+    for (input, expected) in [
+        ("tests/golden/sample.txt", "sample.plain.txt"),
+        ("tests/golden/empty.txt", "empty.plain.txt"),
+    ] {
+        let output = Command::new(env!("CARGO_BIN_EXE_word-count"))
+            .arg(input)
+            .current_dir(env!("CARGO_MANIFEST_DIR"))
+            .stdin(Stdio::null())
+            .output()
+            .expect("the binary starts");
+        assert_eq!(output.status.code(), Some(0));
+        assert_eq!(text(&output.stdout), golden(expected));
+        assert!(output.stderr.is_empty());
+    }
 }
 
 #[test]
@@ -224,13 +239,40 @@ fn fr_013_invalid_utf8_on_standard_input_is_the_same_with_and_without_the_flag()
 }
 
 #[test]
-fn fr_004_a_missing_file_without_the_flag_prints_only_an_error() {
+fn fr_004_a_missing_file_without_the_flag_prints_exactly_the_error() {
     let dir = Scratch::new("missing-plain");
     let file = dir.path("missing.txt");
+    let reason = std::fs::read(&file).expect_err("the file is missing");
     let output = run(&[&file]);
     assert!(output.stdout.is_empty());
-    assert!(!output.stderr.is_empty());
-    assert_ne!(output.status.code(), Some(0));
+    assert_eq!(
+        text(&output.stderr),
+        format!("word-count: cannot read {file}: {reason}\n")
+    );
+    assert_eq!(output.status.code(), Some(1));
+}
+
+/// A read error on standard input: reading from a directory fails on Unix platforms.
+#[cfg(unix)]
+#[test]
+fn fr_013_a_read_error_on_standard_input_is_the_same_with_and_without_the_flag() {
+    let dir = Scratch::new("stdin-directory");
+    let run_on_directory = |args: &[&str]| {
+        let directory = std::fs::File::open(&dir.0).expect("the directory opens");
+        Command::new(env!("CARGO_BIN_EXE_word-count"))
+            .args(args)
+            .stdin(Stdio::from(directory))
+            .output()
+            .expect("the binary starts")
+    };
+    let a = run_on_directory(&["--json"]);
+    let b = run_on_directory(&[]);
+    assert_eq!(a.status.code(), Some(1));
+    assert!(a.stdout.is_empty());
+    assert!(text(&a.stderr).starts_with("word-count: cannot read standard input: "));
+    assert_eq!(a.stdout, b.stdout);
+    assert_eq!(a.stderr, b.stderr);
+    assert_eq!(a.status.code(), b.status.code());
 }
 
 #[test]
