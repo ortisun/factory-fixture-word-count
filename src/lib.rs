@@ -38,6 +38,17 @@ pub fn format_plain(counts: &Counts, name: Option<&str>) -> String {
     }
 }
 
+/// The JSON object the tool prints with `--json`: the keys `lines`, `words` and `characters` in
+/// that order, whole-number values and no white space. It has no trailing newline; the caller adds
+/// it.
+#[must_use]
+pub fn format_json(counts: &Counts) -> String {
+    format!(
+        "{{\"lines\":{},\"words\":{},\"characters\":{}}}",
+        counts.lines, counts.words, counts.characters
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -73,6 +84,33 @@ mod tests {
     fn characters_are_scalar_values_and_not_bytes() {
         let counts = count("caf\u{e9}\n");
         assert_eq!(counts.characters, 5);
+    }
+
+    #[test]
+    fn the_json_line_has_the_three_keys_in_order() {
+        let counts = Counts {
+            lines: 3,
+            words: 7,
+            characters: 31,
+        };
+        assert_eq!(
+            format_json(&counts),
+            r#"{"lines":3,"words":7,"characters":31}"#
+        );
+    }
+
+    #[test]
+    fn the_json_line_of_zero_counts_has_zero_values() {
+        assert_eq!(
+            format_json(&Counts::default()),
+            r#"{"lines":0,"words":0,"characters":0}"#
+        );
+    }
+
+    #[test]
+    fn the_json_line_has_no_white_space_and_no_newline() {
+        let json = format_json(&count("a b\nc\n"));
+        assert!(!json.contains(char::is_whitespace));
     }
 
     #[test]

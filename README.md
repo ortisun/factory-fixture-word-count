@@ -55,6 +55,33 @@ printf 'one two three\n' | word-count
 |---|---|
 | `-h`, `--help` | Show the help text and exit. |
 | `-V`, `--version` | Show the version and exit. |
+| `--json` | Print the counts as one JSON object instead of the three columns. |
+
+### JSON output
+
+With `--json` the tool prints one compact object on a single line, followed by one newline:
+
+```sh
+word-count --json notes.txt
+```
+
+```text
+{"lines":3,"words":7,"characters":31}
+```
+
+- The keys are always `lines`, `words` and `characters`, in that order.
+- The values are whole numbers, never strings. An empty input gives 0 for each.
+- Standard input works the same way: use `--json` with no file name, or with a single dash.
+- The option may appear anywhere among the arguments, before or after the file name. It may also
+  be repeated; a repeated option has the same effect as a single one.
+- Errors, help and version are never printed as JSON. A run that uses `--json` with `--help`,
+  `--version`, an unknown option or more than one file prints exactly what the same command line
+  prints without `--json`, with the same exit status.
+- If the input cannot be read or is not valid UTF-8, nothing is printed on standard output. The
+  message on standard error and the exit status 1 are the same as without `--json`.
+- A successful run writes nothing on standard error and exits with status 0.
+
+The help text does not list `--json`, so this document is where the option is described.
 
 ### Exit status
 
@@ -82,7 +109,7 @@ the project manifest in `.factory/project.yaml` lists that directory as protecte
 
 | Path | What it holds |
 |---|---|
-| `src/lib.rs` | The counting and the plain-text line. |
+| `src/lib.rs` | The counting, the plain-text line and the JSON line. |
 | `src/main.rs` | The command line: the arguments, the reading and the exit status. |
 | `tests/` | The tests that run the real binary, and the stored samples. |
 | `.factory/project.yaml` | The project manifest the factory reads: gate commands, protected paths and required documents. |

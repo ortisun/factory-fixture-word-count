@@ -3,7 +3,7 @@
 use std::io::{self, Read, Write};
 use std::process::ExitCode;
 
-use word_count::{count, format_plain};
+use word_count::{count, format_json, format_plain};
 
 const USAGE: &str = "\
 Usage: word-count [FILE]
@@ -66,7 +66,13 @@ fn read_input(path: Option<&str>) -> io::Result<String> {
 }
 
 fn main() -> ExitCode {
-    let request = match parse(std::env::args().skip(1)) {
+    let mut json = false;
+    let args = std::env::args().skip(1).filter(|arg| {
+        let is_flag = arg == "--json";
+        json |= is_flag;
+        !is_flag
+    });
+    let request = match parse(args) {
         Ok(request) => request,
         Err(UsageError::UnknownOption(option)) => {
             eprintln!("word-count: unknown option '{option}'");
@@ -90,7 +96,12 @@ fn main() -> ExitCode {
         }
         Request::Count { path } => match read_input(path.as_deref()) {
             Ok(text) => {
-                let line = format_plain(&count(&text), path.as_deref());
+                let counts = count(&text);
+                let line = if json {
+                    format_json(&counts)
+                } else {
+                    format_plain(&counts, path.as_deref())
+                };
                 let mut out = io::stdout().lock();
                 if writeln!(out, "{line}").is_err() {
                     return ExitCode::from(1);
