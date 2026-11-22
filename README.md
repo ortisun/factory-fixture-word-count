@@ -85,6 +85,7 @@ the project manifest in `.factory/project.yaml` lists that directory as protecte
 | `src/lib.rs` | The counting and the plain-text line. |
 | `src/main.rs` | The command line: the arguments, the reading and the exit status. |
 | `tests/` | The tests that run the real binary, and the stored samples. |
+| `notes.txt` | The sample text the examples under Use count. |
 | `.factory/project.yaml` | The project manifest the factory reads: gate commands, protected paths and required documents. |
 | `CODEOWNERS` | Who reviews which paths. |
 | `CHANGELOG.md` | What changed in each release. |
