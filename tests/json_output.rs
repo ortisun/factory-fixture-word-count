@@ -46,7 +46,7 @@ fn stdout(output: &std::process::Output) -> &str {
 }
 
 #[test]
-fn the_sample_file_gives_the_exact_compact_object() {
+fn fr_001_fr_002_fr_003_fr_013_the_sample_file_gives_the_exact_compact_object() {
     let output = run(&["--json", "tests/golden/sample.txt"]);
     assert_eq!(output.status.code(), Some(0));
     assert_eq!(stdout(&output), SAMPLE_JSON);
@@ -54,7 +54,7 @@ fn the_sample_file_gives_the_exact_compact_object() {
 }
 
 #[test]
-fn the_empty_file_gives_all_zeros() {
+fn fr_001_fr_004_the_empty_file_gives_all_zeros() {
     let output = run(&["--json", "tests/golden/empty.txt"]);
     assert_eq!(output.status.code(), Some(0));
     assert_eq!(stdout(&output), EMPTY_JSON);
@@ -62,7 +62,7 @@ fn the_empty_file_gives_all_zeros() {
 }
 
 #[test]
-fn standard_input_with_no_file_name_gives_the_object_without_a_name() {
+fn fr_003_fr_008_fr_012_standard_input_with_no_file_name_gives_the_object_without_a_name() {
     let output = run_with_input(&["--json"], SAMPLE_TEXT);
     assert_eq!(output.status.code(), Some(0));
     assert_eq!(stdout(&output), SAMPLE_JSON);
@@ -70,7 +70,7 @@ fn standard_input_with_no_file_name_gives_the_object_without_a_name() {
 }
 
 #[test]
-fn standard_input_with_a_dash_gives_the_object_without_a_name() {
+fn fr_003_fr_008_fr_012_standard_input_with_a_dash_gives_the_object_without_a_name() {
     let output = run_with_input(&["--json", "-"], SAMPLE_TEXT);
     assert_eq!(output.status.code(), Some(0));
     assert_eq!(stdout(&output), SAMPLE_JSON);
@@ -78,7 +78,7 @@ fn standard_input_with_a_dash_gives_the_object_without_a_name() {
 }
 
 #[test]
-fn a_missing_file_gives_no_output_and_an_error() {
+fn fr_006_fr_007_a_missing_file_with_json_gives_no_output_and_an_error() {
     let output = run(&["--json", "tests/golden/missing.txt"]);
     assert_eq!(output.status.code(), Some(1));
     assert!(output.stdout.is_empty());
@@ -87,7 +87,7 @@ fn a_missing_file_gives_no_output_and_an_error() {
 }
 
 #[test]
-fn the_flag_can_come_before_or_after_the_file_name() {
+fn fr_001_fr_008_the_flag_can_come_before_or_after_the_file_name() {
     let before = run(&["--json", "tests/golden/sample.txt"]);
     let after = run(&["tests/golden/sample.txt", "--json"]);
     assert_eq!(stdout(&before), SAMPLE_JSON);
@@ -97,7 +97,7 @@ fn the_flag_can_come_before_or_after_the_file_name() {
 }
 
 #[test]
-fn plain_output_for_the_sample_file_matches_the_stored_sample() {
+fn fr_005_plain_output_for_the_sample_file_matches_the_stored_sample() {
     let output = run(&["tests/golden/sample.txt"]);
     assert!(output.status.success());
     assert_eq!(stdout(&output), golden("sample.plain.txt"));
@@ -105,9 +105,47 @@ fn plain_output_for_the_sample_file_matches_the_stored_sample() {
 }
 
 #[test]
-fn plain_output_for_the_empty_file_matches_the_stored_sample() {
+fn fr_005_plain_output_for_the_empty_file_matches_the_stored_sample() {
     let output = run(&["tests/golden/empty.txt"]);
     assert!(output.status.success());
     assert_eq!(stdout(&output), golden("empty.plain.txt"));
     assert!(output.stderr.is_empty());
+}
+
+#[test]
+fn fr_006_fr_007_a_missing_file_without_json_gives_no_output_and_an_error() {
+    let output = run(&["tests/golden/missing.txt"]);
+    assert_eq!(output.status.code(), Some(1));
+    assert!(output.stdout.is_empty());
+    let message = String::from_utf8(output.stderr).expect("UTF-8");
+    assert!(message.contains("cannot read"), "stderr was: {message}");
+}
+
+fn project_file(name: &str) -> String {
+    let path = format!("{}/{name}", env!("CARGO_MANIFEST_DIR"));
+    fs::read_to_string(path).expect("the project file exists")
+}
+
+#[test]
+fn fr_009_the_readme_documents_the_json_option() {
+    assert!(project_file("README.md").contains("--json"));
+}
+
+#[test]
+fn fr_010_the_changelog_documents_the_json_option() {
+    assert!(project_file("CHANGELOG.md").contains("--json"));
+}
+
+#[test]
+fn fr_011_the_project_lists_no_third_party_dependency() {
+    let manifest = project_file("Cargo.toml");
+    let dependencies = manifest
+        .split("[dependencies]")
+        .nth(1)
+        .expect("the manifest has a dependencies table");
+    let entries = dependencies
+        .lines()
+        .take_while(|line| !line.trim_start().starts_with('['))
+        .filter(|line| !line.trim().is_empty() && !line.trim_start().starts_with('#'));
+    assert_eq!(entries.count(), 0);
 }
