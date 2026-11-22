@@ -41,6 +41,20 @@ printf 'one two three\n' | word-count
       1       3      14
 ```
 
+To read the counts by name in a script, add `--json`:
+
+```sh
+word-count --json notes.txt
+```
+
+```text
+{"lines":3,"words":7,"characters":31}
+```
+
+Standard input works the same way: with no file name, or with a single dash, the tool prints the
+same object. The object never holds a file name. The counting rules and the exit statuses are
+unchanged, and without `--json` the output is exactly as before.
+
 ### What is counted
 
 | Count | Meaning |
@@ -55,6 +69,7 @@ printf 'one two three\n' | word-count
 |---|---|
 | `-h`, `--help` | Show the help text and exit. |
 | `-V`, `--version` | Show the version and exit. |
+| `--json` | Print the counts as one compact JSON object on one line, with the keys `lines`, `words` and `characters`, instead of the plain-text columns. |
 
 ### Exit status
 
@@ -85,6 +100,7 @@ the project manifest in `.factory/project.yaml` lists that directory as protecte
 | `src/lib.rs` | The counting and the plain-text line. |
 | `src/main.rs` | The command line: the arguments, the reading and the exit status. |
 | `tests/` | The tests that run the real binary, and the stored samples. |
+| `tests/json_output.rs` | The tests of the `--json` option. |
 | `.factory/project.yaml` | The project manifest the factory reads: gate commands, protected paths and required documents. |
 | `CODEOWNERS` | Who reviews which paths. |
 | `CHANGELOG.md` | What changed in each release. |
