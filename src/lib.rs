@@ -38,6 +38,17 @@ pub fn format_plain(counts: &Counts, name: Option<&str>) -> String {
     }
 }
 
+/// The compact JSON object the tool prints with `--json`: the keys `lines`, `words` and
+/// `characters` in that order, with no spaces and no trailing line break. The values are unsigned
+/// integers in plain decimal, so no escaping is needed.
+#[must_use]
+pub fn format_json(counts: &Counts) -> String {
+    format!(
+        "{{\"lines\":{},\"words\":{},\"characters\":{}}}",
+        counts.lines, counts.words, counts.characters
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -86,6 +97,41 @@ mod tests {
         assert_eq!(
             format_plain(&counts, Some("notes.txt")),
             "      3       7      31 notes.txt"
+        );
+    }
+
+    #[test]
+    fn the_json_object_is_compact_with_keys_in_order_and_no_line_break() {
+        let counts = Counts {
+            lines: 3,
+            words: 7,
+            characters: 31,
+        };
+        assert_eq!(
+            format_json(&counts),
+            "{\"lines\":3,\"words\":7,\"characters\":31}"
+        );
+    }
+
+    #[test]
+    fn the_json_object_of_zero_counts_has_every_value_zero() {
+        assert_eq!(
+            format_json(&Counts::default()),
+            "{\"lines\":0,\"words\":0,\"characters\":0}"
+        );
+    }
+
+    #[test]
+    fn the_json_object_prints_the_largest_count_as_a_plain_integer() {
+        let counts = Counts {
+            lines: usize::MAX,
+            words: usize::MAX,
+            characters: usize::MAX,
+        };
+        let max = usize::MAX.to_string();
+        assert_eq!(
+            format_json(&counts),
+            format!("{{\"lines\":{max},\"words\":{max},\"characters\":{max}}}")
         );
     }
 }

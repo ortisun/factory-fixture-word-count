@@ -3,7 +3,7 @@
 use std::io::{self, Read, Write};
 use std::process::ExitCode;
 
-use word_count::{count, format_plain};
+use word_count::{count, format_json, format_plain};
 
 const USAGE: &str = "\
 Usage: word-count [FILE]
@@ -23,7 +23,7 @@ line is wrong.
 enum Request {
     Help,
     Version,
-    Count { path: Option<String> },
+    Count { path: Option<String>, json: bool },
 }
 
 /// Why the command line was refused.
@@ -34,11 +34,13 @@ enum UsageError {
 
 fn parse(args: impl IntoIterator<Item = String>) -> Result<Request, UsageError> {
     let mut path: Option<String> = None;
+    let mut json = false;
     for arg in args {
         match arg.as_str() {
             "-h" | "--help" => return Ok(Request::Help),
             "-V" | "--version" => return Ok(Request::Version),
             "-" => {}
+            "--json" => json = true,
             option if option.starts_with('-') => {
                 return Err(UsageError::UnknownOption(arg));
             }
@@ -50,7 +52,7 @@ fn parse(args: impl IntoIterator<Item = String>) -> Result<Request, UsageError> 
             }
         }
     }
-    Ok(Request::Count { path })
+    Ok(Request::Count { path, json })
 }
 
 fn read_input(path: Option<&str>) -> io::Result<String> {
@@ -88,9 +90,14 @@ fn main() -> ExitCode {
             println!("word-count {}", env!("CARGO_PKG_VERSION"));
             ExitCode::SUCCESS
         }
-        Request::Count { path } => match read_input(path.as_deref()) {
+        Request::Count { path, json } => match read_input(path.as_deref()) {
             Ok(text) => {
-                let line = format_plain(&count(&text), path.as_deref());
+                let counts = count(&text);
+                let line = if json {
+                    format_json(&counts)
+                } else {
+                    format_plain(&counts, path.as_deref())
+                };
                 let mut out = io::stdout().lock();
                 if writeln!(out, "{line}").is_err() {
                     return ExitCode::from(1);
